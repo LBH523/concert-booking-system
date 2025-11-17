@@ -1,87 +1,32 @@
-import uuid
 
-from flask import Flask, jsonify, request
+
+from flask import Flask
 from flask_cors import CORS
 
 
-BOOKS = [
-    {
-        'id': uuid.uuid4().hex,
-        'title': 'On the Road',
-        'author': 'Jack Kerouac',
-        'read': True
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'title': 'Harry Potter and the Philosopher\'s Stone',
-        'author': 'J. K. Rowling',
-        'read': False
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'title': 'Green Eggs and Ham',
-        'author': 'Dr. Seuss',
-        'read': True
-    }
-]
-
+#use blueprint to use functions in other files
+from user import user_bp
+from admin_event import admin_event_bp
+from ticket_booking import ticket_booking_bp
+from admin_order import admin_order_bp
 # instantiate the app
 app = Flask(__name__)
-app.config.from_object(__name__)
+#app.config.from_object(__name__)
+
 
 # enable CORS
-CORS(app, resources={r'/*': {'origins': '*'}})
+#CORS(app, resources={r'/*': {'origins': '*'}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}},
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Session-ID"])
+app.config['SECRET_KEY'] = 'admin'
 
 
-def remove_book(book_id):
-    for book in BOOKS:
-        if book['id'] == book_id:
-            BOOKS.remove(book)
-            return True
-    return False
-
-
-# sanity check route
-@app.route('/ping', methods=['GET'])
-def ping_pong():
-    return jsonify('pong!')
-
-
-@app.route('/books', methods=['GET', 'POST'])
-def all_books():
-    response_object = {'status': 'success'}
-    if request.method == 'POST':
-        post_data = request.get_json()
-        BOOKS.append({
-            'id': uuid.uuid4().hex,
-            'title': post_data.get('title'),
-            'author': post_data.get('author'),
-            'read': post_data.get('read')
-        })
-        response_object['message'] = 'Book added!'
-    else:
-        response_object['books'] = BOOKS
-    return jsonify(response_object)
-
-
-@app.route('/books/<book_id>', methods=['PUT', 'DELETE'])
-def single_book(book_id):
-    response_object = {'status': 'success'}
-    if request.method == 'PUT':
-        post_data = request.get_json()
-        remove_book(book_id)
-        BOOKS.append({
-            'id': uuid.uuid4().hex,
-            'title': post_data.get('title'),
-            'author': post_data.get('author'),
-            'read': post_data.get('read')
-        })
-        response_object['message'] = 'Book updated!'
-    if request.method == 'DELETE':
-        remove_book(book_id)
-        response_object['message'] = 'Book removed!'
-    return jsonify(response_object)
-
+# register blueprint
+app.register_blueprint(user_bp)
+app.register_blueprint(admin_event_bp)
+app.register_blueprint(ticket_booking_bp)
+app.register_blueprint(admin_order_bp)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5001)

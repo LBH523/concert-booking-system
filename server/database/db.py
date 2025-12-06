@@ -5,7 +5,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # database/ 目录
 DB_PATH = os.path.join(BASE_DIR, "concert.db")              # 指向 database/app.db
 
 def connect_db():
-    return sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH)
+    # 启用外键约束
+    conn.execute('PRAGMA foreign_keys = ON')
+    return conn
 
 
 def execute_query(query, params=()):

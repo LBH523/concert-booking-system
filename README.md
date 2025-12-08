@@ -13,11 +13,27 @@ server/
 ├── admin_event.py          # Admin routes for adding, editing, deleting events
 ├── admin_order.py          # Admin and user routes for viewing/canceling orders
 ├── ticket_booking.py       # Routes for searching events, viewing seats, booking tickets
+├── test.py                 # Concert booking performance test under varied loads
 ├── database/
 │   ├── db.py               # Database helper functions (public queries, transactions)
 │   └── concert.db          # SQLite database file
 ├── requirements.txt
 └── README.md
+server_optimized/
+├── app.py                  # Main Flask application entry point
+├── user.py                 # User registration and login routes
+├── admin_event.py          # Admin routes for adding, editing, deleting events
+├── admin_order.py          # Admin and user routes for viewing/canceling orders
+├── ticket_booking.py       # Routes for searching events, viewing seats, booking tickets
+├── seat_cache.py           # Cache management for seat status info based on Redis
+├── test.py                 # Optimized concert booking performance test under varied loads
+├── database/
+│   ├── db.py               # Database helper functions (public queries, transactions)
+│   └── concert.db          # SQLite database file
+├── requirements.txt
+└── README.md
+test/
+├── run_tests.py            # Runs tests, outputs the performance comparison
 ```
 
 ## Dependencies

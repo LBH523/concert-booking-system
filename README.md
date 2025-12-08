@@ -1,4 +1,4 @@
-```markdown
+
 # High-Concurrency Concert Ticket Booking System with Flask & Vue
 
 This project is a **full-stack web application** for managing concert events, user accounts, and ticket booking.  
@@ -6,16 +6,16 @@ It consists of a **Flask backend** providing REST APIs, a **Vue.js frontend** de
 
 ## Project Structure
 
-```
+```text
 server/
-├── app.py                     # Main Flask application entry point
-├── user.py                    # User registration and login routes
-├── admin_event.py             # Admin routes for adding, editing, deleting events
-├── admin_order.py             # Admin and user routes for viewing/canceling orders
-├── ticket_booking.py          # Routes for searching events, viewing seats, booking tickets
+├── app.py                  # Main Flask application entry point
+├── user.py                 # User registration and login routes
+├── admin_event.py          # Admin routes for adding, editing, deleting events
+├── admin_order.py          # Admin and user routes for viewing/canceling orders
+├── ticket_booking.py       # Routes for searching events, viewing seats, booking tickets
 ├── database/
-│   ├── db.py                  # Database helper functions (public queries, transactions)
-│   └── concert.db             # SQLite database file
+│   ├── db.py               # Database helper functions (public queries, transactions)
+│   └── concert.db          # SQLite database file
 ├── requirements.txt
 └── README.md
 ```
@@ -32,7 +32,8 @@ The project uses the following Python packages:
   Lightweight relational database used for storing users, events, seats, and orders.
 
 Other modules used:  
-`uuid`, `os`, `re`, `werkzeug.utils` (standard libraries)
+`uuid` (standard library) for generating session IDs.  
+`os`, `re`, `werkzeug.utils` (standard libraries) for file handling and regex validation.
 
 ## How to Run
 
@@ -44,7 +45,7 @@ Other modules used:
    (env)$ pip install -r requirements.txt
    (env)$ PYTHONPATH=. flask --app app run --port=5001 --debug
    ```
-   Navigate to http://localhost:5001
+   Navigate to [http://localhost:5001](http://localhost:5001)
 
 2. Run the client-side Vue app in a different terminal window:
    ```sh
@@ -52,7 +53,5 @@ Other modules used:
    $ npm install
    $ npm run dev
    ```
-   Navigate to http://localhost:5173
+   Navigate to [http://localhost:5173](http://localhost:5173)
 ```
-
-直接复制粘贴即可，GitHub 渲染效果完美，内容一个字都没改，仅优化了 Markdown 格式。Enjoy!

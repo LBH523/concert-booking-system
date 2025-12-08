@@ -3,12 +3,10 @@ import sqlite3
 import sys
 from pathlib import Path
 
-# 新增：将项目根目录添加到系统路径（关键修复）
-BASE_DIR = Path(__file__).parent.parent  # 项目根目录（server_optimized）
-sys.path.append(str(BASE_DIR))
-
-# 现在可以直接导入根目录的 cache 模块
-from seat_cache import update_seat_cache  # <-- 修正为绝对导入
+# 导入根目录的 cache 模块
+BASE_DIR2 = Path(__file__).parent.parent  # 项目根目录（server_optimized）
+sys.path.append(str(BASE_DIR2))  # 将项目根目录添加到系统路径
+from seat_cache import batch_update_seat_cache  # 直接导入
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # database/ 目录
 DB_PATH = os.path.join(BASE_DIR, "concert.db")  # 指向 database/app.db
@@ -104,9 +102,9 @@ def reserve_seats(event_id, seat_ids, username, user_id):
         # Step 5: commit transaction
         conn.commit()
 
-        # 新增：更新缓存中已预订的座位状态（使用调整后的导入）
-        for seat_id in seat_ids:  # <-- 新增
-            update_seat_cache(event_id, seat_id, 1)  # <-- 新增
+        # 单个更新 → 批量更新
+        seat_updates = [(seat_id, 1) for seat_id in seat_ids]
+        batch_update_seat_cache(event_id, seat_updates)
 
         return {"status": "success", "order_id": order_id, 'total_price': total_price}
     except Exception as e:

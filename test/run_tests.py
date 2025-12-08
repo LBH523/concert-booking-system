@@ -4,11 +4,9 @@ import os
 import json
 import csv
 
-# 手动配置需要运行的版本（修改为新文件夹名称）
-RUN_VERSIONS = ["server", "server_optimized"]  # 确保包含两个版本
-OUTPUT_CSV = "performance_comparison.csv"  # 输出的CSV文件名
-
-# 定义负载梯度的顺序
+# 配置参数
+RUN_VERSIONS = ["server", "server_optimized"]
+OUTPUT_CSV = "performance_comparison.csv"
 LOAD_GRADIENT_ORDER = ["轻度负载", "中度负载", "重度负载"]
 
 
@@ -74,9 +72,9 @@ def run_test(version):
         while True:
             line = process.stdout.readline()
             if not line and process.poll() is not None:
-                break  # 进程结束且无更多输出
+                break
             if line:
-                print(line, end="")  # 实时打印当前行（end=""避免重复换行）
+                print(line, end="")  # 实时打印当前行
                 full_stdout.append(line)  # 累积输出用于后续解析
 
         # 检查进程是否正常结束
@@ -118,9 +116,9 @@ def save_comparison_to_csv(performance_data):
     gradient_names.extend(sorted(all_gradients))
 
     # 准备CSV头部（保留中文）
-    headers = ["梯度名称", "版本"]
+    headers = ["负载梯度", "系统版本"]
     metrics = ["座位利用率(%)", "所有请求平均响应时间(ms)", "所有请求最长响应时间(ms)",
-               "成功请求平均响应时间(ms)", "成功请求最长响应时间(ms)",
+               "成功请求平均响应时间(ms)", "成功请求最长响应时间(ms)", "失败请求平均响应时间(ms)", "失败请求最长响应时间(ms)",
                "总测试时间(ms)", "吞吐量(请求/秒)"]
     headers.extend(metrics)
 
@@ -129,9 +127,13 @@ def save_comparison_to_csv(performance_data):
         writer = csv.writer(csvfile)
         writer.writerow(headers)
 
-        # 写入每个梯度的各版本数据，不添加空行避免重复
+        # 写入每个梯度的各版本数据：按预设版本顺序处理
         for grad_name in gradient_names:
-            for version, data in performance_data.items():
+            # 按RUN_VERSIONS指定顺序确保server在前，server_optimized在后
+            for version in RUN_VERSIONS:
+                if version not in performance_data:
+                    continue  # 跳过没有数据的版本
+                data = performance_data[version]
                 if grad_name not in data:
                     print(f"警告：{version} 版本中未找到梯度 '{grad_name}' 的数据，跳过")
                     continue
@@ -143,6 +145,8 @@ def save_comparison_to_csv(performance_data):
                     f"{data[grad_name]['all_requests_max']:.2f}",
                     f"{data[grad_name]['success_requests_avg']:.2f}",
                     f"{data[grad_name]['success_requests_max']:.2f}",
+                    f"{data[grad_name]['failure_requests_avg']:.2f}",
+                    f"{data[grad_name]['failure_requests_max']:.2f}",
                     f"{data[grad_name]['total_test_time']:.2f}",
                     f"{data[grad_name]['throughput']:.2f}"
                 ]
@@ -154,7 +158,7 @@ def save_comparison_to_csv(performance_data):
 if __name__ == "__main__":
     all_performance_data = {}
 
-    # 顺序运行每个版本（一个完成后再运行下一个）
+    # 依次运行版本
     for version in RUN_VERSIONS:
         print(f"准备运行 {version} 版本测试...")
         data = run_test(version)

@@ -3,12 +3,16 @@ from flask import Blueprint, request, jsonify, session
 from database.db import execute_query, fetch_query
 import sqlite3
 from werkzeug.utils import secure_filename
+# 新增：导入缓存模块
+import seat_cache  # 新增
+
 admin_event_bp = Blueprint('admin_event', __name__)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "posters")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # 确保目录存在
 
-    #handle and store poster image
+
+# handle and store poster image
 def handle_poster_upload(req):
     """Process the uploaded poster image and return its public URL."""
     if "poster" not in req.files:
@@ -26,21 +30,22 @@ def handle_poster_upload(req):
     poster_url = f"/posters/{filename}"
     return poster_url, None, None
 
-#FR-EM-001
+
+# FR-EM-001
 @admin_event_bp.route('/add_event', methods=['POST'])
 def add_event():
-    #check is_admin
+    # check is_admin
     session_id = request.headers.get('Session-ID')
     print('session_id', session_id)
     session_info = fetch_query("SELECT username, is_admin FROM Sessions WHERE session_id = ?", (session_id,))
     if not session_info:
         return jsonify({'status': 'fail', 'message': 'Invalid or expired session'}), 401
-    #username = session_info[0]['username']
+    # username = session_info[0]['username']
     is_admin = session_info[0]['is_admin']
-    if is_admin==0:
+    if is_admin == 0:
         return jsonify({'status': 'fail', 'message': 'Permission denied: not an admin'}), 403
 
-    #generate poster_url
+    # generate poster_url
     poster_url, err_json, err_code = handle_poster_upload(request)
     if err_json:
         return jsonify(err_json), err_code
@@ -48,10 +53,10 @@ def add_event():
     # Parse other fields from FormData
     data = request.form.to_dict()
     name = data.get('name')
-    event_date = data.get('event_date') # Expected format: YYYY-MM-DD
-    start_time = data.get('start_time') # Expected format: HH:MM
-    #1-vip 2-standard 3-economy
-    #set initial stock stationary: 1-40 2-50 3-60
+    event_date = data.get('event_date')  # Expected format: YYYY-MM-DD
+    start_time = data.get('start_time')  # Expected format: HH:MM
+    # 1-vip 2-standard 3-economy
+    # set initial stock stationary: 1-40 2-50 3-60
     price_1 = data.get('price_1')
     price_2 = data.get('price_2')
     price_3 = data.get('price_3')
@@ -59,7 +64,7 @@ def add_event():
     stock_2 = 50
     stock_3 = 60
 
-    #Insert Events
+    # Insert Events
     try:
         event_id = execute_query(
             "INSERT INTO Events (name, poster_url, event_date, start_time) VALUES (?, ?, ?, ?)",
@@ -81,7 +86,7 @@ def add_event():
 
         row_offset = 0  # keep track of current row number across all seat types
 
-        #Insert SeatTypes
+        # Insert SeatTypes
         for seat_type in seat_data:
             execute_query(
                 "INSERT INTO SeatTypes (event_id, type, price, stock) VALUES (?, ?, ?, ?)",
@@ -101,12 +106,19 @@ def add_event():
             # update row_offset after finishing this seat type
             row_offset += (stock // 10) + (1 if stock % 10 != 0 else 0)
 
+        # 新增：获取初始座位数据并写入缓存
+        initial_seats = fetch_query("SELECT * FROM Seats WHERE event_id = ?", (event_id,))
+        if initial_seats:
+            dict_seats = [dict(row) for row in initial_seats]
+            seat_cache.set_seats_to_cache(event_id, dict_seats)  # 新增
+
     except Exception as e:
         print(f"Unexpected error during seat insertion: {e}")
         return jsonify({'status': 'error', 'message': 'Server error during seat setup'}), 500
     return jsonify({'status': 'success', 'message': 'Add event success'})
 
-#FR-EM-002
+
+# FR-EM-002
 @admin_event_bp.route('/edit_event', methods=['POST'])
 def edit_event():
     # check is_admin
@@ -119,7 +131,7 @@ def edit_event():
         return jsonify({'status': 'fail', 'message': 'Permission denied: not an admin'}), 403
 
     data = request.get_json()
-    #print('data', data)
+    # print('data', data)
     event_id = data.get('event_id')
     price_1 = data.get('price_1')
     price_2 = data.get('price_2')
@@ -147,6 +159,9 @@ def edit_event():
                 (price, eid, seat_type)
             )
 
+        # 新增：编辑活动后清除旧缓存
+        seat_cache.clear_event_cache(event_id)  # 新增
+
         return jsonify({'status': 'success', 'message': 'Event updated successfully'})
     except sqlite3.Error as e:
         print(f"Database error: {e}")
@@ -154,6 +169,7 @@ def edit_event():
     except Exception as e:
         print(f"Unexpected error: {e}")
         return jsonify({'status': 'error', 'message': 'Server is wrong'}), 500
+
 
 # FR-EM-002
 @admin_event_bp.route('/delete_event', methods=['POST'])
@@ -171,6 +187,9 @@ def delete_event():
 
     try:
         execute_query("DELETE FROM Events WHERE id=?", (event_id,))
+
+        # 新增：删除活动后清除对应缓存
+        seat_cache.clear_event_cache(event_id)  # 新增
 
         return jsonify({"status": "success", "message": f"Event {event_id} deleted"}), 200
     except Exception as e:

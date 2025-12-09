@@ -34,6 +34,14 @@ server_optimized/
 └── README.md
 test/
 ├── run_tests.py            # Runs tests, outputs the performance comparison
+server/tests/
+├── conftest.py             # pytest configuration and fixtures
+├── test_user.py            # User management module tests
+├── test_admin_event.py     # Event management module tests
+├── test_ticket_booking.py  # Ticket booking module tests
+├── test_admin_order.py     # Order management module tests
+├── test_database.py        # Database module tests
+└── README.md              # Test documentation
 ```
 
 ## Dependencies
@@ -51,23 +59,56 @@ Other modules used:
 `uuid` (standard library) for generating session IDs.  
 `os`, `re`, `werkzeug.utils` (standard libraries) for file handling and regex validation.
 
+## Testing Framework
+
+The project includes comprehensive test suites using:
+
+- **pytest==7.4.0**: Testing framework
+- **coverage==7.2.7**: Code coverage analysis
+- **pytest-flask**: Flask application testing utilities
+
 ## How to Run
 
-1. Run the server-side Flask app in one terminal window:
-   ```sh
-   $ cd server
-   $ python3 -m venv env
-   $ source env/bin/activate
-   (env)$ pip install -r requirements.txt
-   (env)$ PYTHONPATH=. flask --app app run --port=5001 --debug
-   ```
-   Navigate to [http://localhost:5001](http://localhost:5001)
+### 1. Server-side Flask App
+```sh
+$ cd server
+$ python3 -m venv env
+$ source env/bin/activate
+(env)$ pip install -r requirements.txt
+(env)$ PYTHONPATH=. flask --app app run --port=5001 --debug
+```
+Navigate to [http://localhost:5001](http://localhost:5001)
 
-2. Run the client-side Vue app in a different terminal window:
-   ```sh
-   $ cd client
-   $ npm install
-   $ npm run dev
-   ```
-   Navigate to [http://localhost:5173](http://localhost:5173)
+### 2. Client-side Vue App
+```sh
+$ cd client
+$ npm install
+$ npm run dev
+```
+Navigate to [http://localhost:5173](http://localhost:5173)
+
+### 3. Running Tests
+```sh
+# Navigate to server directory and activate virtual environment
+$ cd server
+$ source env/bin/activate
+
+# Run all tests
+(env)$ pytest tests/ -v
+
+# Run specific test module
+(env)$ pytest tests/test_user.py -v
+
+# Run tests with coverage report
+(env)$ coverage run -m pytest tests/
+(env)$ coverage report
+(env)$ coverage html  # Generate HTML report
+```
+
+### 4. Performance Testing
+```sh
+# 运行性能对比测试
+$ cd test
+$ python run_tests.py
+```
 ```

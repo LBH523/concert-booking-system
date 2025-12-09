@@ -56,39 +56,7 @@
 - 座位预订核心逻辑测试
 - 数据库约束验证
 - 触发器功能测试
-
-## 🚀 运行测试
-
-
-
-### 方法一：直接使用pytest
-
-```bash
-cd server
-
-# 安装依赖
-pip install -r requirements.txt
-
-# 运行所有测试
-pytest tests/ -v
-
-# 运行特定模块
-pytest tests/test_user.py -v
-pytest tests/test_admin_event.py -v
-pytest tests/test_ticket_booking.py -v
-pytest tests/test_admin_order.py -v
-pytest tests/test_database.py -v
-
-# 生成覆盖率报告
-pytest tests/ --cov=. --cov-report=html
-```
-
-### 方法二：运行所有测试并生成报告
-
-```bash
-cd server
-python run_tests.py --all
-```
+`
 
 
 ## 🛠️ 测试框架和工具

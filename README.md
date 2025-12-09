@@ -107,8 +107,8 @@ $ source env/bin/activate
 
 ### 4. Performance Testing
 ```sh
-# 运行性能对比测试
 $ cd test
 $ python run_tests.py
 ```
 ```
+
